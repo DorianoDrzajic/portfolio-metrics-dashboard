@@ -65,13 +65,16 @@ const Header = () => {
             <>
               <div className="flex flex-col items-end">
                 <span className="text-sm text-muted-foreground">Total Value</span>
-                <span className="font-medium">${metrics.totalValue.toLocaleString()}</span>
+                <span className="font-medium" key={metrics.totalValue}>${metrics.totalValue.toLocaleString()}</span>
               </div>
               
               <div className="flex flex-col items-end">
                 <span className="text-sm text-muted-foreground">Today</span>
                 <div className="flex items-center">
-                  <span className={`font-medium ${metrics.dailyChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span 
+                    className={`font-medium ${metrics.dailyChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    key={metrics.dailyChangePercent}
+                  >
                     {metrics.dailyChangePercent >= 0 ? '+' : ''}
                     {metrics.dailyChangePercent.toFixed(2)}%
                   </span>

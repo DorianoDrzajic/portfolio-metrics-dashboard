@@ -1,9 +1,10 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { PortfolioMetrics as PortfolioMetricsType } from '../data/portfolioData';
 import { calculateLivePortfolioMetrics } from '../data/livePortfolioData';
 
-const MetricCard = ({ 
+// Memoized metric card to prevent unnecessary re-renders
+const MetricCard = memo(({ 
   title, 
   value, 
   subValue,
@@ -44,11 +45,11 @@ const MetricCard = ({
         </div>
       ) : (
         <div className="flex items-baseline">
-          <span className="text-lg font-medium">
+          <span className="text-lg font-medium" key={value}>
             {formatValue(value)}
           </span>
           {subValue !== undefined && (
-            <span className={`ml-2 text-sm ${displayColor}`}>
+            <span className={`ml-2 text-sm ${displayColor}`} key={subValue}>
               {subValue > 0 ? '+' : ''}
               {formatValue(subValue)}
             </span>
@@ -57,7 +58,9 @@ const MetricCard = ({
       )}
     </div>
   );
-};
+});
+
+MetricCard.displayName = 'MetricCard';
 
 const PortfolioMetrics = () => {
   const [metrics, setMetrics] = useState<PortfolioMetricsType | null>(null);

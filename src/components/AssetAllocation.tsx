@@ -1,10 +1,29 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { calculateLiveAssetAllocation } from '../data/livePortfolioData';
 import { AssetAllocation as AssetAllocationType } from '../data/portfolioData';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A374DB'];
+
+// Memoized component for rendering allocation items to prevent re-renders
+const AllocationItem = memo(({ item, index }: { item: AssetAllocationType; index: number }) => (
+  <div key={item.type} className="flex items-center justify-between text-sm">
+    <div className="flex items-center">
+      <div 
+        className="w-3 h-3 rounded-full mr-2" 
+        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+      />
+      <span>{item.type}</span>
+    </div>
+    <div className="flex space-x-4">
+      <span className="text-muted-foreground">{item.percentage.toFixed(1)}%</span>
+      <span className="font-medium">${item.value.toLocaleString()}</span>
+    </div>
+  </div>
+));
+
+AllocationItem.displayName = 'AllocationItem';
 
 const AssetAllocation = () => {
   const [allocation, setAllocation] = useState<AssetAllocationType[]>([]);
@@ -55,7 +74,7 @@ const AssetAllocation = () => {
               >
                 {allocation.map((entry, index) => (
                   <Cell 
-                    key={`cell-${index}`} 
+                    key={`cell-${entry.type}`} 
                     fill={COLORS[index % COLORS.length]} 
                     stroke="none"
                   />
@@ -86,19 +105,7 @@ const AssetAllocation = () => {
           ))
         ) : (
           allocation.map((item, index) => (
-            <div key={item.type} className="flex items-center justify-between text-sm">
-              <div className="flex items-center">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2" 
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                />
-                <span>{item.type}</span>
-              </div>
-              <div className="flex space-x-4">
-                <span className="text-muted-foreground">{item.percentage.toFixed(1)}%</span>
-                <span className="font-medium">${item.value.toLocaleString()}</span>
-              </div>
-            </div>
+            <AllocationItem key={item.type} item={item} index={index} />
           ))
         )}
       </div>

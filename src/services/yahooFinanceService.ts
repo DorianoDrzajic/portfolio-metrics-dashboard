@@ -28,7 +28,13 @@ export const fetchCurrentPrice = async (ticker: string): Promise<{
   dailyChange: number;
 }> => {
   try {
-    const response = await fetch(`${YF_BASE_URL}${ticker}?interval=1d`);
+    const response = await fetch(`${YF_BASE_URL}${ticker}?interval=1d`, {
+      cache: 'no-store', // Prevent caching to get fresh data each time
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; PortfolioApp/1.0)'
+      }
+    });
     
     if (!response.ok) {
       throw new Error(`Yahoo Finance API error: ${response.statusText}`);
@@ -63,7 +69,14 @@ export const fetchHistoricalPrices = async (ticker: string, days: number = 30): 
     const startDate = endDate - (days * 24 * 60 * 60);
     
     const response = await fetch(
-      `${YF_BASE_URL}${ticker}?period1=${startDate}&period2=${endDate}&interval=1d`
+      `${YF_BASE_URL}${ticker}?period1=${startDate}&period2=${endDate}&interval=1d`,
+      {
+        cache: 'no-store', // Prevent caching to get fresh data each time
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (compatible; PortfolioApp/1.0)'
+        }
+      }
     );
     
     if (!response.ok) {
