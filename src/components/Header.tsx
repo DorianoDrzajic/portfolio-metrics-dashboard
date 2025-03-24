@@ -34,8 +34,8 @@ const Header = () => {
     
     fetchMetrics();
     
-    // Refresh every 5 minutes
-    const intervalId = setInterval(fetchMetrics, 5 * 60 * 1000);
+    // Refresh every 5 seconds
+    const intervalId = setInterval(fetchMetrics, 5 * 1000);
     return () => clearInterval(intervalId);
   }, []);
 

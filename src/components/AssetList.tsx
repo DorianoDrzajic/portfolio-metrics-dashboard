@@ -30,8 +30,8 @@ const AssetList = () => {
     
     fetchAssets();
     
-    // Refresh every 5 minutes
-    const intervalId = setInterval(fetchAssets, 5 * 60 * 1000);
+    // Refresh every 5 seconds
+    const intervalId = setInterval(fetchAssets, 5 * 1000);
     return () => clearInterval(intervalId);
   }, []);
   

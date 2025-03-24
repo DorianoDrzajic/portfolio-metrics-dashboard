@@ -10,7 +10,7 @@ import { updateAssetWithLiveData } from '../services/yahooFinanceService';
 // Cache for live assets to avoid too many API calls
 let liveAssetsCache: Asset[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 1000; // 5 seconds (was 5 minutes)
 
 export const fetchLiveAssets = async (): Promise<Asset[]> => {
   const currentTime = Date.now();
