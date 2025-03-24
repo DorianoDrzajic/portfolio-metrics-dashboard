@@ -1,5 +1,7 @@
 
-import { portfolioMetrics } from '../data/portfolioData';
+import { useState, useEffect } from 'react';
+import { PortfolioMetrics as PortfolioMetricsType } from '../data/portfolioData';
+import { calculateLivePortfolioMetrics } from '../data/livePortfolioData';
 
 const MetricCard = ({ 
   title, 
@@ -7,19 +9,22 @@ const MetricCard = ({
   subValue,
   isPercentage = false,
   isCurrency = false,
-  isPositiveGood = true
+  isPositiveGood = true,
+  loading = false
 }: { 
   title: string; 
-  value: number;
+  value?: number;
   subValue?: number;
   isPercentage?: boolean;
   isCurrency?: boolean;
   isPositiveGood?: boolean;
+  loading?: boolean;
 }) => {
-  const isPositive = subValue ? subValue > 0 : value > 0;
+  const isPositive = subValue ? subValue > 0 : value ? value > 0 : false;
   const displayColor = isPositive === isPositiveGood ? 'text-green-600' : 'text-red-600';
   
-  const formatValue = (val: number) => {
+  const formatValue = (val?: number) => {
+    if (val === undefined) return '—';
     if (isCurrency) {
       return `$${val.toLocaleString()}`;
     }
@@ -32,69 +37,107 @@ const MetricCard = ({
   return (
     <div className="bg-white rounded-lg shadow-subtle p-4 transition-all hover:shadow-card">
       <h4 className="text-sm text-muted-foreground mb-1">{title}</h4>
-      <div className="flex items-baseline">
-        <span className="text-lg font-medium">
-          {formatValue(value)}
-        </span>
-        {subValue !== undefined && (
-          <span className={`ml-2 text-sm ${displayColor}`}>
-            {subValue > 0 ? '+' : ''}
-            {formatValue(subValue)}
+      {loading ? (
+        <div className="flex items-baseline space-x-2">
+          <div className="h-5 w-20 animate-pulse rounded bg-gray-200"></div>
+          {subValue !== undefined && <div className="h-4 w-12 animate-pulse rounded bg-gray-200"></div>}
+        </div>
+      ) : (
+        <div className="flex items-baseline">
+          <span className="text-lg font-medium">
+            {formatValue(value)}
           </span>
-        )}
-      </div>
+          {subValue !== undefined && (
+            <span className={`ml-2 text-sm ${displayColor}`}>
+              {subValue > 0 ? '+' : ''}
+              {formatValue(subValue)}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
 const PortfolioMetrics = () => {
+  const [metrics, setMetrics] = useState<PortfolioMetricsType | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        setLoading(true);
+        const liveMetrics = await calculateLivePortfolioMetrics();
+        setMetrics(liveMetrics);
+      } catch (error) {
+        console.error("Failed to fetch portfolio metrics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMetrics();
+    
+    // Refresh every 5 minutes
+    const intervalId = setInterval(fetchMetrics, 5 * 60 * 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-up">
       <MetricCard
         title="Total Value"
-        value={portfolioMetrics.totalValue}
+        value={metrics?.totalValue}
         isCurrency
+        loading={loading}
       />
       <MetricCard
         title="Daily Change"
-        value={portfolioMetrics.dailyChange}
-        subValue={portfolioMetrics.dailyChangePercent}
+        value={metrics?.dailyChange}
+        subValue={metrics?.dailyChangePercent}
         isCurrency
         isPercentage={false}
+        loading={loading}
       />
       <MetricCard
         title="Volatility (Annualized)"
-        value={portfolioMetrics.volatility}
+        value={metrics?.volatility}
         isPercentage
         isPositiveGood={false}
+        loading={loading}
       />
       <MetricCard
         title="Sharpe Ratio"
-        value={portfolioMetrics.sharpeRatio}
+        value={metrics?.sharpeRatio}
         isPositiveGood={true}
+        loading={loading}
       />
       <MetricCard
         title="Average Yield"
-        value={portfolioMetrics.averageYield}
+        value={metrics?.averageYield}
         isPercentage
         isPositiveGood={true}
+        loading={loading}
       />
       <MetricCard
         title="Duration"
-        value={portfolioMetrics.duration || 0}
+        value={metrics?.duration || 0}
         isPositiveGood={true}
+        loading={loading}
       />
       <MetricCard
         title="YTD Return"
-        value={portfolioMetrics.yearlyChangePercent}
+        value={metrics?.yearlyChangePercent}
         isPercentage
         isPositiveGood={true}
+        loading={loading}
       />
       <MetricCard
         title="All Time Return"
-        value={portfolioMetrics.allTimeChangePercent}
+        value={metrics?.allTimeChangePercent}
         isPercentage
         isPositiveGood={true}
+        loading={loading}
       />
     </div>
   );
