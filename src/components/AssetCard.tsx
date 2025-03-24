@@ -1,5 +1,7 @@
 
 import { Asset } from '../data/portfolioData';
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AssetCardProps {
   asset: Asset;
@@ -9,6 +11,17 @@ const AssetCard = ({ asset }: AssetCardProps) => {
   const priceChange = asset.currentPrice - asset.purchasePrice;
   const priceChangePercentage = (priceChange / asset.purchasePrice) * 100;
   
+  // Get readable asset type name
+  const assetTypeName = asset.type.charAt(0).toUpperCase() + asset.type.slice(1).replace('-', ' ');
+  
+  // Asset type descriptions for tooltips
+  const assetTypeDescriptions: Record<string, string> = {
+    'equity': 'Stocks or shares that represent ownership in companies.',
+    'fixed-income': 'Investments that pay fixed interest or dividends, like bonds.',
+    'cash': 'Highly liquid assets including cash, savings accounts, and money market funds.',
+    'alternative': 'Non-traditional investments like real estate, commodities, or private equity.'
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-card hover:shadow-card-hover transition-all duration-300 p-4">
       <div className="flex justify-between items-start mb-3">
@@ -16,9 +29,18 @@ const AssetCard = ({ asset }: AssetCardProps) => {
           <h3 className="font-medium text-base">{asset.name}</h3>
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-muted-foreground">{asset.ticker}</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-secondary">
-              {asset.type.charAt(0).toUpperCase() + asset.type.slice(1).replace('-', ' ')}
-            </span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary cursor-help">
+                    {assetTypeName}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{assetTypeDescriptions[asset.type] || `${assetTypeName} investments`}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         

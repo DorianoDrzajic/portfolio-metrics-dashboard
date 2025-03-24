@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import AssetCard from './AssetCard';
 import { Asset } from '../data/portfolioData';
 import { fetchLiveAssets } from '../data/livePortfolioData';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type SortField = 'name' | 'value' | 'allocation' | 'dailyChange' | 'yield';
 type SortOrder = 'asc' | 'desc';
@@ -63,6 +64,15 @@ const AssetList = () => {
     return 0;
   });
   
+  // Asset type descriptions for tooltips
+  const assetTypeDescriptions: Record<string, string> = {
+    'all': 'View all assets in your portfolio regardless of type.',
+    'equity': 'Stocks or shares that represent ownership in companies.',
+    'fixed-income': 'Investments that pay fixed interest or dividends, like bonds.',
+    'cash': 'Highly liquid assets including cash, savings accounts, and money market funds.',
+    'alternative': 'Non-traditional investments like real estate, commodities, or private equity.'
+  };
+  
   const assetTypes: { value: AssetType, label: string }[] = [
     { value: 'all', label: 'All Assets' },
     { value: 'equity', label: 'Equities' },
@@ -77,20 +87,28 @@ const AssetList = () => {
         <h3 className="text-lg font-medium">Portfolio Assets</h3>
         
         <div className="mt-3 sm:mt-0 flex flex-wrap gap-2">
-          {assetTypes.map((type) => (
-            <button
-              key={type.value}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                assetTypeFilter === type.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-              onClick={() => setAssetTypeFilter(type.value)}
-              disabled={loading}
-            >
-              {type.label}
-            </button>
-          ))}
+          <TooltipProvider>
+            {assetTypes.map((type) => (
+              <Tooltip key={type.value}>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                      assetTypeFilter === type.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    }`}
+                    onClick={() => setAssetTypeFilter(type.value)}
+                    disabled={loading}
+                  >
+                    {type.label}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{assetTypeDescriptions[type.value]}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </TooltipProvider>
         </div>
       </div>
       
